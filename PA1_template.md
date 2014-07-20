@@ -1,8 +1,3 @@
----
-output:
-  html_document:
-    keep_md: yes
----
 # Reproducible Research Course : Peer Assessment 1
 ===================================================
 
@@ -16,7 +11,8 @@ Data Source: https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip
 ## Loading and preprocessing the data
 
 * Loading the data
-```{r load_data,echo=TRUE}
+
+```r
   library(ggplot2) # Used ggplot2 system for plotting
   file_name="activity.csv"
   ## A new class is required to handle the date format.
@@ -26,7 +22,8 @@ Data Source: https://d396qusza40orc.cloudfront.net/repdata%2Fdata%2Factivity.zip
 ```
 
 * Preprocessing the activity data
-```{r transform_data,echo=TRUE}
+
+```r
 calc_interval_activity <- function (activity_ds) {
     activity_interval <- aggregate (activity_ds$steps,by=list(interval=activity_ds$interval),FUN=mean,na.rm=T )
     
@@ -40,7 +37,8 @@ calc_interval_activity <- function (activity_ds) {
 ## What is mean total number of steps taken per day?
 * Histogram of the total number of steps taken each day
 
-```{r make_histogram,echo=TRUE}
+
+```r
 plot_histogram <- function (activity_day,steps_mean,steps_median) {
   .e = environment()
   point_labels=c(paste(" Mean:",steps_mean),paste(" Median:",steps_median))
@@ -64,14 +62,17 @@ steps_median<-round(median(activity_day$steps),0)
 plot_histogram(activity_day,steps_mean,steps_median)
 ```
 
+![plot of chunk make_histogram](./PA1_template_files/figure-html/make_histogram.png) 
+
 * The mean and median total number of steps taken per day are :
- - **`r paste("Mean:", steps_mean)`**
- - **`r paste("Median:", steps_median)`**
+ - **Mean: 10766**
+ - **Median: 10765**
 
 ## What is the average daily activity pattern?
 Time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the average number of steps taken, averaged across all days (y-axis)
 
-```{r daily_pattern,echo=TRUE}
+
+```r
   activity_interval <- calc_interval_activity (activity_data)
   steps_max<-which.max(activity_interval$steps)
   interval_max <- activity_interval[steps_max,]$interval
@@ -82,24 +83,31 @@ Time series plot (i.e. type = "l") of the 5-minute interval (x-axis) and the ave
      scale_color_manual(name=element_blank(),labels=point_labels,values=c("blue")) +
      labs(title="Average daily activity pattern",x="5-minute Interval",y="Average Steps") +
      theme_bw() + theme(legend.position="bottom")
-
 ```
+
+![plot of chunk daily_pattern](./PA1_template_files/figure-html/daily_pattern.png) 
 
 * The 5-minute interval, on average across all the days in the dataset, which contains the maximum number of steps is :
  
- - **`r paste("5-minute interval:", interval_max)`**
+ - **5-minute interval: 835**
 
 ## Imputing missing values
 
 There are a number of days/intervals where there are missing values (coded as NA). The presence of missing days may introduce bias into some calculations or summaries of the data.
 
-```{r}
+
+```r
 sum(is.na(activity_data$steps)) # observations with missing data
+```
+
+```
+## [1] 2304
 ```
 
 ## My strategy for imputing missing steps
 
-```{r impute_data,echo=TRUE}
+
+```r
   indices_na <- which(is.na(activity_data$steps))
 
   replace_na <- unlist(lapply(indices_na, FUN=function(index) {
@@ -116,12 +124,24 @@ sum(is.na(activity_data$steps)) # observations with missing data
 ```
 
 * The summary of the new dataset with imputed values is :
-```{r summary_impute_data,echo=TRUE}
+
+```r
 summary(activity_imputed)
 ```
 
+```
+##      steps            date               interval   
+##  Min.   :  0.0   Min.   :2012-10-01   Min.   :   0  
+##  1st Qu.:  0.0   1st Qu.:2012-10-16   1st Qu.: 589  
+##  Median :  0.0   Median :2012-10-31   Median :1178  
+##  Mean   : 37.4   Mean   :2012-10-31   Mean   :1178  
+##  3rd Qu.: 27.0   3rd Qu.:2012-11-15   3rd Qu.:1766  
+##  Max.   :806.0   Max.   :2012-11-30   Max.   :2355
+```
+
 * This is the histogram based on the imputed dataset
-```{r histogram_impute_data,echo=TRUE}
+
+```r
 activity_imputed_day <- aggregate (steps ~ date, data=activity_imputed, FUN=sum)
 steps_imputed_mean<-round(mean(activity_imputed_day$steps),0)
 steps_imputed_median<-round(median(activity_imputed_day$steps),0)
@@ -129,16 +149,19 @@ steps_imputed_median<-round(median(activity_imputed_day$steps),0)
 plot_histogram(activity_imputed_day,steps_imputed_mean,steps_imputed_median)
 ```
 
+![plot of chunk histogram_impute_data](./PA1_template_files/figure-html/histogram_impute_data.png) 
+
 * While comparing with the original activity dataset, we observe that while the mean value remains the same, the median value has shifted closer to the mean and hence we have smaller variance and less skewness.
 
 * The mean and median total number of steps taken per day are :
- - **`r paste("Mean:", steps_imputed_mean)`**
- - **`r paste("Median:", steps_imputed_median)`**
+ - **Mean: 10766**
+ - **Median: 10766**
 
 ## Are there differences in activity patterns between weekdays and weekends?
 * The comparison plot is based on the filled-in missing values.
 
-```{r weekend_vs_weekday,echo=TRUE}
+
+```r
   calc_week_activity <- function(activity_ds) {
       activity_ds$weekday<-as.factor(weekdays(activity_ds$date))
       
@@ -164,8 +187,9 @@ plot_histogram(activity_imputed_day,steps_imputed_mean,steps_imputed_median)
   facet_wrap(~daytype,nrow=2,ncol=1) +
   labs(x="Interval",y="Number of Steps") +
   theme_bw()
-
 ```
+
+![plot of chunk weekend_vs_weekday](./PA1_template_files/figure-html/weekend_vs_weekday.png) 
 
 * Observation:
   The activity on the weekends is almost constant over the day compared to the weekdays where there is more activity in the morning as compared to evening.(Possible reason being is job schedule)
